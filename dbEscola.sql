@@ -86,6 +86,12 @@ drop procedure spAtualizarClienteNome;
 call spAtualizarClienteNome("Muito Tontinho", "Tontinho");
 call spAtualizarClienteNome("Lindinha de Morrer", "Lindinha");
 
+delimiter $$
+create procedure spAtualizarClienteComID(vclienteID int, vcliNome varchar(150), vcliEmail varchar(150))
+begin
+	update tb_Cliente
+    set cliNome = vcliNome, cliEmail = vcliEmail where clienteId = vclienteID; 
+end $$
 
-
-
+call spAtualizarClienteNomeID(4, "Muito Tontinho", "tonti@escola.com");
+call spAtualizarClienteNomeID(3, "Lindinha de Morrer", "lindi@escola.com");
