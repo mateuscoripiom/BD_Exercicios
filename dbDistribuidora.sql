@@ -620,13 +620,19 @@ select * from tbProduto;
 -- EXERCÍCIO 22
 
 call spInsertVenda(4, 'Disney Chaplin', '19/09/2022', 12345678910111, 64.50, 1, 64.50, null);
-select * from tbCliente;
-select * from tbProduto;
-select * from tbCompra;
-select * from tbVenda;
 
 -- EXERCÍCIO 23
 
+select * from tbVenda order by DataVenda desc limit 1;
+
+-- EXERCÍCIO 24
+
+select * from tbItemVenda order by NumeroVenda desc limit 1;
+
+-- EXERCÍCIO 25
+
+delimiter $$
+end $$
 
 -- FINALIZAÇÃO
 
