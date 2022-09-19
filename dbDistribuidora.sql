@@ -456,7 +456,6 @@ begin
         insert into tbItemVenda(NumeroVenda, CodBarras, Qtd, ValorItem) values (vNumVenda, @CodBarras, vQtd, vValorItem);
 end $$
 
-
 -- CALL -- FAZENDO OS INSERTS
 call spInsertVenda(1, 'Pimpão', '22/08/2022', 12345678910111, 54.61, 1, 54.61, null);
 call spInsertVenda(2, 'Lança Perfume', '22/08/2022', 12345678910112, 100.45, 2, 200.90, null);
@@ -489,6 +488,8 @@ begin
 	end if;
 end $$
 
+drop procedure spInsertNF;
+
 -- CALL -- FAZENDO OS INSERTS
 call spInsertNF(359, 'Pimpão', '29/08/2022');
 call spInsertNF(360, 'Lança Perfume', '29/08/2022');
@@ -504,6 +505,7 @@ select * from tbVenda;
 describe tbNotaFiscal; -- TOTALNOTA CANNOT BE NULL 
 
 -- EXERCÍCIO 12
+
 delimiter $$
 create procedure spInsertProduto2(vCodBarras decimal(14,0), vNome varchar(200), vValorUnitario decimal(6, 2), vQtd int)
 begin
@@ -531,102 +533,10 @@ begin
 	end if;
 end $$
 
+drop procedure spDeleteProduto;
 
 call spDeleteProduto(12345678910116, "Boneco do Hitler", 124.00, 200);
-call spDeleteProduto(12345678910117, "Farinha de Suruí", 124.00, 200);
-
--- EXERCÍCIO 14
-delimiter $$
-create procedure spAtualizaProduto(vCodBarras decimal(14,0), vNome varchar(200), vValorUnitario decimal(6, 2))
-begin
-	if (select CodBarras from tbProduto where CodBarras = vCodBarras) then
-		update tbProduto
-    set Nome = vNome, ValorUnitario = vValorUnitario where codBarras = vCodBarras; 
-	else
-		select "Produto não existe";
-	end if;
-end $$
-
-call spAtualizaProduto(12345678910111, 'Rei de Papel Mache', 64.50);
-call spAtualizaProduto(12345678910112, 'Bolinha de Sabão', 120.00);
-call spAtualizaProduto(12345678910113, 'Carro Bate Bate', 64.00);
-
-select * from tbProduto;
-
--- EXERCÍCIO 15
-delimiter $$
-create procedure spMostrarProduto()
-begin
-	select * from tbProduto;
-end $$
-
-call spMostrarProduto;
-
--- EXERCÍCIO 16
-create table tbProdutoHistorico like tbProduto;
-
--- EXERCÍCIO 17
-alter table tbProdutoHistorico add Ocorrencia varchar(20);
-alter table tbProdutoHistorico add Atualizacao datetime;
-
-describe tbProdutoHistorico;
-
--- EXERCÍCIO 18 
-alter table tbProdutoHistorico drop primary key;
-alter table tbProdutoHistorico
-add Constraint PK_Id_ProdutoHistorico primary key(CodBarras, Ocorrencia, Atualizacao);
-
--- EXERCÍCIO 19
-Delimiter //
-create trigger TRG_ProdutoInsert after insert on tbProduto
-	for each row 
-begin 
-	insert into tbProdutoHistorico 
-		set CodBarras = New.CodBarras,
-				 Nome = New.Nome,
-		ValorUnitario = New.ValorUnitario,
-			      Qtd = New.Qtd,
-           Ocorrencia = "Novo",
-          Atualizacao = current_timestamp();
-end // 
-
-call spInsertProduto(12345678910119, 'Água mineral', 1.99, 500);
-
-select * from tbProdutoHistorico;
-
--- EXERCÍCIO 20
-Delimiter //
-create trigger TRG_ProdutoAtua after update on tbProduto
-	for each row 
-begin 
-	insert into tbProdutoHistorico 
-		set CodBarras = New.CodBarras,
-				 Nome = New.Nome,
-		ValorUnitario = New.ValorUnitario,
-			      Qtd = New.Qtd,
-           Ocorrencia = "Atualizado",
-          Atualizacao = current_timestamp();
-end // 
-
-call spAtualizaProduto(12345678910119, 'Água mineral', 2.99);
-
-
-select * from tbProdutoHistorico;
-
--- EXERCÍCIO 21
-
-select * from tbProduto;
-
--- EXERCÍCIO 22
-
-call spInsertVenda(4, 'Disney Chaplin', '19/09/2022', 12345678910111, 64.50, 1, 64.50, null);
-select * from tbCliente;
-select * from tbProduto;
-select * from tbCompra;
-select * from tbVenda;
-
--- EXERCÍCIO 23
-
+call spDeleteProduto(12345678910117, "Farinha de ", 124.00, 200);
 
 -- FINALIZAÇÃO
 
