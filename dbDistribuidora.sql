@@ -632,9 +632,66 @@ select * from tbItemVenda order by NumeroVenda desc limit 1;
 -- EXERCÍCIO 25
 
 delimiter $$
+create procedure spMostrarCliente (vNomeCli varchar(50))
+begin
+	select * from tbCliente where Nome = vNomeCli;
 end $$
 
+call spMostrarCliente("Disney Chaplin");
+
+-- EXERCÍCIO 26
+select * from tbProduto;
+delimiter //
+Create trigger TRG_QtdProd after insert on tbItemVenda
+for each row
+begin
+	update tbProduto set Qtd = Qtd - new.Qtd where CodBarras = new.CodBarras;
+end
+//
+
+-- drop trigger TRG_QtdProd;
+    
+-- EXERCÍCIO 27
+select * from tbProduto;
+select * from tbVenda;
+select * from tbItemVenda;
+
+call spInsertVenda(6, 'Paganada', '26/09/2022', 12345678910114, 10.00, 15, 150.00, null);
+
+-- EXERCÍCIO 28
+select * from tbProduto;
+
+-- EXERCÍCIO 29
+select * from tbCompra;
+select * from tbItemCompra;
+
+delimiter //
+Create trigger TRG_QtdCompra after insert on tbItemCompra
+for each row
+begin
+	update tbProduto set Qtd = Qtd + new.Qtd where CodBarras = new.CodBarras;
+end
+//
+
+-- EXERCÍCIO 30
+call spInsertCompra(10548, 'Amoroso e Doce', '2022-09-10', 12345678910111, 40.00, 100, 100, 4000.00);
+
+-- EXERCÍCIO 31
+select * from tbProduto;
+
 -- FINALIZAÇÃO
+
+describe tbProduto;
+
+call spInsertProduto(12345678910199, 'Boneca', 21.00, 200);
+
+select * from tbProduto;
+select * from tbProdutoHistorico;
+
+set sql_safe_updates = 0;
+
+call spMostrarProduto;
+
 
 
 
