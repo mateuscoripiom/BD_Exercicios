@@ -1,5 +1,8 @@
 -- BOM DIA, INTRUSO. LUAN E MATEUS ADORAM SUA PRESENÇA AQUI
 
+-- SAFE UPDATES
+set sql_safe_updates = 0;
+
 -- JOGANDO FORA O BANCO 
 drop database dbDistribuidoraLM;
 
@@ -684,11 +687,10 @@ call spMostrarProduto;
 describe tbProduto;
 
 call spInsertProduto(12345678910199, 'Boneca', 21.00, 200);
+call spAtualizaProduto(12345678910199, 'Boneca Marvel', 201.00);
 
 select * from tbProduto;
 select * from tbProdutoHistorico;
-
-set sql_safe_updates = 0;
 
 call spMostrarProduto;
 
