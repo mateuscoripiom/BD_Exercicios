@@ -677,7 +677,7 @@ end
 call spInsertCompra(10548, 'Amoroso e Doce', '2022-09-10', 12345678910111, 40.00, 100, 100, 4000.00);
 
 -- EXERCÍCIO 31
-select * from tbProduto;
+call spMostrarProduto;
 
 -- FINALIZAÇÃO
 
