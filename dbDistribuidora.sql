@@ -49,8 +49,8 @@ create table tbEndereco (
 
 -- TABELA CLIENTE
 create table tbCliente (
- Id int auto_increment primary key,
- Nome varchar(50) not null,
+ IdCli int auto_increment primary key,
+ NomeCli varchar(50) not null,
  CEP decimal(8,0) not null,
  foreign key (CEP) references tbEndereco(CEP),
  NumEnd decimal(6,0) not null,
@@ -59,8 +59,8 @@ create table tbCliente (
 
 -- TABELA CLIENTE PF -- PESSOA FÍSICA
 create table tbClientePF (
- IdCliente int auto_increment,
- foreign key (IdCliente) references tbCliente(Id),
+ IdCli int auto_increment,
+ foreign key (IdCli) references tbCliente(IdCli),
  Cpf decimal(11,0) not null primary key, -- pode ter futuros erros aqui
  Rg decimal(8,0),
  RgDig char(1),
@@ -69,8 +69,8 @@ create table tbClientePF (
 
 -- TABELA CLIENTE PJ -- PESSOA JURÍDICA
 create table tbClientePJ (
- IdCliente int auto_increment,
- foreign key (IdCliente) references tbCliente(Id),
+ IdCli int auto_increment,
+ foreign key (IdCli) references tbCliente(IdCli),
  Cnpj decimal(14,0) not null primary key,
  Ie decimal(11,0)
 );
@@ -129,12 +129,13 @@ create table tbItemCompra (
 
 -- TABELA VENDA
 create table tbVenda (
- IdCliente int not null,
- foreign key (IdCliente) references tbCliente(Id),
- NumeroVenda int primary key,
+ IdCli int not null,
+ foreign key (IdCli) references tbCliente(IdCli),
+ NumeroVenda int primary key auto_increment,
  DataVenda datetime not null default(current_timestamp()),
  TotalVenda decimal(7, 2) not null,
  NotaFiscal int,
+ QtdTotal int not null,
  foreign key (NotaFiscal) references tbNotaFiscal(NF)
 );
 
@@ -313,7 +314,7 @@ select * from tbCidade;
 
 -- EXERCÍCIO 7 -- INSERINDO CLIENTES -- NÃO PODE REPETIR
 delimiter $$
-create procedure spInsertCliente (vNome varchar(50), vNumEnd decimal(6,0), vCompEnd varchar(50), vCEP decimal(8,0), vCPF decimal(11,0), vRG decimal(8,0), vRgDig char(1), vNasc date,
+create procedure spInsertCliente (vNomeCli varchar(50), vNumEnd decimal(6,0), vCompEnd varchar(50), vCEP decimal(8,0), vCPF decimal(11,0), vRG decimal(8,0), vRgDig char(1), vNasc date,
 vLogradouro varchar(200), vBairro varchar(200), vCidade varchar(200), vUF char(2))
 begin
    	if not exists (select CPF from tbClientePF where CPF = vCPF) then
@@ -338,7 +339,7 @@ begin
 			(vCEP, vLogradouro, @IdBairro, @IdCidade, @IdUF); 
 		end if;
     
-		insert into tbCliente(Nome, CEP, NumEnd, CompEnd) values (vNome, vCEP, vNumEnd, vCompEnd);
+		insert into tbCliente(NomeCli, CEP, NumEnd, CompEnd) values (vNomeCli, vCEP, vNumEnd, vCompEnd);
 		insert into tbClientePF(CPF, RG, RgDig, Nasc) values (vCPF, vRG, vRgDig, vNasc);
 	else
 		select "Existe";
@@ -364,7 +365,7 @@ select * from tbCidade;
 
 -- EXERCÍCIO 8 -- INSERINDO CLIENTES PJ -- 
 delimiter $$
-create procedure spInsertCliPJ (vNome varchar(50), vCNPJ decimal(14,0), vIE decimal(11,0), vCEP decimal(8,0), vLogradouro varchar(200), vNumEnd decimal(6,0), vCompEnd varchar(50),
+create procedure spInsertCliPJ (vNomeCli varchar(50), vCNPJ decimal(14,0), vIE decimal(11,0), vCEP decimal(8,0), vLogradouro varchar(200), vNumEnd decimal(6,0), vCompEnd varchar(50),
 vBairro varchar(200), vCidade varchar(200), vUF char(2))
 
 begin
@@ -390,7 +391,7 @@ begin
 			(vCEP, vLogradouro, @IdBairro, @IdCidade, @IdUF); 
 		end if;
         
-			insert into tbCliente(Nome, CEP, NumEnd, CompEnd) value(vNome, vCEP, vNumEnd, vCompEnd);
+			insert into tbCliente(NomeCli, CEP, NumEnd, CompEnd) value(vNomeCli, vCEP, vNumEnd, vCompEnd);
 			insert into tbClientePJ(Cnpj, Ie) value (vCNPJ, vIE);
 	else
 		select "Existe";
@@ -444,23 +445,44 @@ select * from tbItemCompra;
 
 -- EXERCÍCIO 10 -- INSERINDO VENDAS -- 
 delimiter $$
-create procedure spInsertVenda(vNumVenda int, vCliente varchar(200), vDataVenda char(10), vCodBarras decimal(14,0), vValorItem decimal(6,2), vQtd int, vTotalVenda int, vNF int)
+create procedure spInsertVenda(vCliente varchar(200), vCodBarras decimal(14,0), vQtd int, vNF int)
 begin
-	set @IdCli = (select Id from tbCliente where Nome = vCliente);
-    set @DataVenda = str_to_date(vDataVenda, "%d/%m/%Y");
-    set @CodBarras = (select CodBarras from tbProduto where CodBarras = vCodBarras);
-
-	if not exists (select NumeroVenda from tbVenda where NumeroVenda = vNumVenda) then
-		insert into tbVenda(IdCliente, NumeroVenda, DataVenda, TotalVenda, NotaFiscal) values (@IdCli, vNumVenda, @DataVenda, vTotalVenda, vNF);
-	end if;
-        insert into tbItemVenda(NumeroVenda, CodBarras, Qtd, ValorItem) values (vNumVenda, @CodBarras, vQtd, vValorItem);
+	set @vData = current_timestamp();
+    set @vTotal = (select ValorUnitario from tbProduto where CodBarras = vCodBarras);
+	if exists (select * from tbProduto, tbCliente where CodBarras = vCodBarras and NomeCli = vCliente) then
+		set @idCliente = (select IdCli from tbCliente where NomeCli = vCliente);
+		set @codigoVenda = (select NumeroVenda from tbVenda where IdCli = @idCliente);
+		if (@codigoVenda is null) then
+			insert into tbVenda(IdCli,DataVenda,TotalVenda,QtdTotal,NotaFiscal) values (@idCliente,@vData,0,0,vNF);
+		end if;
+        set @codigoVenda = (select NumeroVenda from tbVenda where IdCli = @idCliente);
+		if not exists(select * from tbItemVenda where NumeroVenda = @codigoVenda and CodBarras = vCodBarras) then
+			  insert into tbItemVenda(NumeroVenda,CodBarras,ValorItem,Qtd) values (@codigoVenda,vCodBarras,@vTotal,vQtd);
+        else
+			select "Venda já realizada";
+		end if;
+    end if;
+	if not exists(select * from tbCliente where NomeCli = vCliente) then 
+		select "Cliente inexistente"; 
+    end if;
+	if not exists(select * from tbProduto where CodBarras = vCodBarras) then 
+		select "Produto inexistente";
+    end if;
 end $$
+-- drop procedure spInsertVenda;
 
+delimiter //
+create trigger TGR_AtuaVenda after insert on tbItemVenda
+for each row
+begin
+	update tbVenda set TotalVenda = TotalVenda + (new.ValorItem*new.Qtd), QtdTotal = QtdTotal + new.Qtd where NumeroVenda = new.NumeroVenda;
+end
+//
 
 -- CALL -- FAZENDO OS INSERTS
-call spInsertVenda(1, 'Pimpão', '22/08/2022', 12345678910111, 54.61, 1, 54.61, null);
-call spInsertVenda(2, 'Lança Perfume', '22/08/2022', 12345678910112, 100.45, 2, 200.90, null);
-call spInsertVenda(3, 'Pimpão', '22/08/2022', 12345678910113, 44.00, 1, 44.00, null);
+call spInsertVenda("Pimpão",12345678910111,1,null);
+call spInsertVenda("Lança Perfume",12345678910112,2,null);
+call spInsertVenda("Pimpão",12345678910113,1,null);
 
 -- SELECT 
 select * from tbCliente;
@@ -474,20 +496,21 @@ select * from tbItemVenda;
 delimiter $$
 create procedure spInsertNF(vNF int, vCliente varchar(200), vDataEmissao char(10))
 begin
-	set @IdCli = (select Id from tbCliente where Nome = vCliente);
-    set @DataEmissao = str_to_date(vDataEmissao, "%d/%M/%Y");
-	set @ValorTotal = (select sum(TotalVenda) from tbVenda where IdCliente = @IdCli);
+	set @IdCli = (select IdCli from tbCliente where NomeCli = vCliente);
+    set @DataEmissao = current_timestamp();
+	set @ValorTotal = (select sum(TotalVenda) from tbVenda where IdCli = @IdCli);
 
 	if not exists (select NF from tbNotaFiscal where NF = vNF) then
 		insert into tbNotaFiscal(NF, TotalNota, DataEmissao) values (vNF, @ValorTotal, @DataEmissao);
 
    	if not exists (select NotaFiscal from tbVenda where NotaFiscal = vNF) then
-		update tbVenda set NotaFiscal = vNF where IdCliente = @IdCli;
+		update tbVenda set NotaFiscal = vNF where IdCli = @IdCli;
 	end if;
     else
 		select "Existe";
 	end if;
 end $$
+-- drop procedure spInsertNF;
 
 -- CALL -- FAZENDO OS INSERTS
 call spInsertNF(359, 'Pimpão', '29/08/2022');
@@ -619,7 +642,7 @@ select * from tbProduto;
 
 -- EXERCÍCIO 22
 
-call spInsertVenda(4, 'Disney Chaplin', '19/09/2022', 12345678910111, 64.50, 1, 64.50, null);
+call spInsertVenda("Disney Chaplin",12345678910111,1, null);
 
 -- EXERCÍCIO 23
 
@@ -634,7 +657,7 @@ select * from tbItemVenda order by NumeroVenda desc limit 1;
 delimiter $$
 create procedure spMostrarCliente (vNomeCli varchar(50))
 begin
-	select * from tbCliente where Nome = vNomeCli;
+	select * from tbCliente where NomeCli = vNomeCli;
 end $$
 
 call spMostrarCliente("Disney Chaplin");
@@ -656,7 +679,7 @@ select * from tbProduto;
 select * from tbVenda;
 select * from tbItemVenda;
 
-call spInsertVenda(6, 'Paganada', '26/09/2022', 12345678910114, 10.00, 15, 150.00, null);
+call spInsertVenda("Paganada",12345678910114,15, null);
 
 -- EXERCÍCIO 28
 select * from tbProduto;
