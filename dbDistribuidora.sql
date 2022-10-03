@@ -1,4 +1,4 @@
--- BOM DIA, INTRUSO. LUAN E MATEUS ADORAM SUA PRESENÇA AQUI
+-- BOM DIA, INTRUSO. LEONARDO E MATEUS ADORAM SUA PRESENÇA AQUI
 
 -- JOGANDO FORA O BANCO 
 drop database dbDistribuidoraLM;
@@ -421,20 +421,21 @@ delimiter $$
 create procedure spInsertCompra(vNotaFiscal int, vFornecedor varchar(200), vDataCompra date, vCodBarras decimal(14,0), vValorItem decimal(6,2),
 vQtd int, vQtdTotal int, vValorTotal decimal(8,2))
 begin
+	declare vDataConvertida date;
+	set vDataConvertida = STR_TO_DATE(vDataCompra, '%d/%m/%Y');
 	if not exists (select NotaFiscal from tbCompra where NotaFiscal = vNotaFiscal) then
-		insert into tbCompra(NotaFiscal, DataCompra, ValorTotal, QtdTotal, Cod_Fornecedor) values (vNotaFiscal, vDataCompra, vValorTotal, vQtdTotal,
+		insert into tbCompra(NotaFiscal, DataCompra, ValorTotal, QtdTotal, Cod_Fornecedor) values (vNotaFiscal, vDataConvertida, vValorTotal, vQtdTotal,
         (select codigo from tbFornecedor where Nome = vFornecedor));
 	end if;
         insert into tbItemCompra(Qtd, ValorItem, NotaFiscal, CodBarras) values (vQtd, vValorItem, vNotaFiscal, vCodBarras);
 end $$
 
-
 -- CALL -- FAZENDO OS INSERTS
-call spInsertCompra(8459, 'Amoroso e Doce', '2018-05-01', 12345678910111, 22.22, 200, 700, 21944.00);
-call spInsertCompra(2482, 'Revenda Chico Loco', '2020-04-22', 12345678910112, 40.50, 180, 180, 7290.00);
-call spInsertCompra(21563, 'Marcelo Dedal', '2020-07-12', 12345678910113, 3.00, 300, 300, 900.00);
-call spInsertCompra(8459, 'Amoroso e Doce', '2020-12-04', 12345678910114, 35.00, 500, 700, 21944.00);
-call spInsertCompra(156354, 'Revenda Chico Loco', '2021-11-23', 12345678910115, 54.00, 350, 350, 18900.00);
+call spInsertCompra(8459, 'Amoroso e Doce', '01/05/2018', 12345678910111, 22.22, 200, 700, 21944.00);
+call spInsertCompra(2482, 'Revenda Chico Loco', '22/04/2020', 12345678910112, 40.50, 180, 180, 7290.00);
+call spInsertCompra(21563, 'Marcelo Dedal', '12/07/2020', 12345678910113, 3.00, 300, 300, 900.00);
+call spInsertCompra(8459, 'Amoroso e Doce', '04/12/2020', 12345678910114, 35.00, 500, 700, 21944.00);
+call spInsertCompra(156354, 'Revenda Chico Loco', '23/11/2021', 12345678910115, 54.00, 350, 350, 18900.00);
 
 -- SELECT 
 select * from tbCompra;
@@ -497,7 +498,7 @@ delimiter $$
 create procedure spInsertNF(vNF int, vCliente varchar(200), vDataEmissao char(10))
 begin
 	set @IdCli = (select IdCli from tbCliente where NomeCli = vCliente);
-    set @DataEmissao = current_timestamp();
+    set @DataEmissao = str_to_date(vDataEmissao, '%d/%m/%Y');
 	set @ValorTotal = (select sum(TotalVenda) from tbVenda where IdCli = @IdCli);
 
 	if not exists (select NF from tbNotaFiscal where NF = vNF) then
@@ -638,11 +639,13 @@ select * from tbProdutoHistorico;
 
 -- EXERCÍCIO 21
 
-select * from tbProduto;
+call spMostrarProduto;
 
 -- EXERCÍCIO 22
 
 call spInsertVenda("Disney Chaplin",12345678910111,1, null);
+select * from tbVenda;
+select * from tbCliente;
 
 -- EXERCÍCIO 23
 
@@ -662,6 +665,7 @@ end $$
 
 call spMostrarCliente("Disney Chaplin");
 
+
 -- EXERCÍCIO 26
 select * from tbProduto;
 delimiter //
@@ -671,7 +675,7 @@ begin
 	update tbProduto set Qtd = Qtd - new.Qtd where CodBarras = new.CodBarras;
 end
 //
-
+show create procedure spInsertVenda;
 -- drop trigger TRG_QtdProd;
     
 -- EXERCÍCIO 27
@@ -682,7 +686,7 @@ select * from tbItemVenda;
 call spInsertVenda("Paganada",12345678910114,15, null);
 
 -- EXERCÍCIO 28
-select * from tbProduto;
+call spMostrarProduto;
 
 -- EXERCÍCIO 29
 select * from tbCompra;
@@ -697,28 +701,9 @@ end
 //
 
 -- EXERCÍCIO 30
-call spInsertCompra(10548, 'Amoroso e Doce', '2022-09-10', 12345678910111, 40.00, 100, 100, 4000.00);
+call spInsertCompra(10548, 'Amoroso e Doce', '10/09/2022', 12345678910111, 40.00, 100, 100, 4000.00); 
 
 -- EXERCÍCIO 31
 call spMostrarProduto;
 
 -- FINALIZAÇÃO
-
-describe tbProduto;
-
-call spInsertProduto(12345678910199, 'Boneca', 21.00, 200);
-
-select * from tbProduto;
-select * from tbProdutoHistorico;
-
-set sql_safe_updates = 0;
-
-call spMostrarProduto;
-
-
-
-
-
-
- 
-
