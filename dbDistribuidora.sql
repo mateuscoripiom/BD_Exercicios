@@ -812,3 +812,38 @@ from
 	tbcompra 
 		right join 
     tbfornecedor on tbcompra.cod_fornecedor = tbfornecedor.codigo where tbcompra.cod_fornecedor is null; 
+    
+-- EXERCÍCIO 42
+select * from tbCLiente;
+select * from tbvenda;
+select * from tbitemvenda;
+select * from tbproduto;
+select * from tbnotafiscal;
+
+select  
+     tbcliente.idcli, nomecli, datavenda, 
+     tbproduto.codbarras, 
+     tbproduto.nome, valorunitario 
+ from 
+     tbcliente 
+         inner join 
+     tbvenda on tbcliente.idcli = tbvenda.idcli 
+         inner join 
+     tbitemvenda on tbvenda.numerovenda = tbitemvenda.numerovenda 
+         inner join 
+     tbproduto on tbitemvenda.codbarras = tbproduto.codbarras 
+ where 
+     tbvenda.idcli is not null order by nomecli;
+     
+-- EXERCÍCIO 43
+select * from tbbairro;
+select * from tbvenda;
+select * from tbcliente;
+sel
+
+select 
+    tbfornecedor.codigo as "Código",  
+from 
+	tbcompra 
+		right join 
+    tbfornecedor on tbcompra.cod_fornecedor = tbfornecedor.codigo where tbcompra.cod_fornecedor is null; 
