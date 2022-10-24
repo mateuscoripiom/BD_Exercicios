@@ -1,13 +1,12 @@
--- BOM DIA, INTRUSO. LEONARDO E MATEUS ADORAM SUA PRESENÇA AQUI
 
 -- JOGANDO FORA O BANCO 
-drop database dbDistribuidoraLM;
+drop database dbDistribuiaaraLM;
 
 -- CRIAÇÃO O BANCO
-create database dbDistribuidoraLM;
+create database dbDistribuiaaraLM;
 
 -- USO DO BANCO
-use dbDistribuidoraLM;
+use dbDistribuiaaraLM;
 
 -- CRIAÇÃO DAS TABELAS
 
@@ -313,47 +312,7 @@ select * from tbCidade;
 -- FINALIZAÇÃO
 
 -- EXERCÍCIO 7 -- INSERINDO CLIENTES -- NÃO PODE REPETIR
-delimiter $$
-create procedure spInsertCliente (vNomeCli varchar(50), vNumEnd decimal(6,0), vCompEnd varchar(50), vCEP decimal(8,0), vCPF decimal(11,0), vRG decimal(8,0), vRgDig char(1), vNasc date,
-vLogradouro varchar(200), vBairro varchar(200), vCidade varchar(200), vUF char(2))
-begin
-   	if not exists (select CPF from tbClientePF where CPF = vCPF) then
-		if not exists (select CEP from tbEndereco where CEP = vCEP) then
-			if not exists (select IdBairro from tbBairro where Bairro = vBairro) then
-				insert into tbBairro(Bairro) values (vBairro);
-			end if;
 
-			if not exists (select IdUf from tbUF where UF = vUF) then
-				insert into tbUF(UF) values (vUF);
-			end if;
-
-			if not exists (select IdCidade from tbCidade where Cidade = vCidade) then
-				insert into tbCidade(Cidade) values (vCidade);
-			end if;
-
-			set @IdBairro = (select IdBairro from tbBairro where Bairro = vBairro);
-			set @IdUf = (select IdUF from tbUF where UF = vUf);
-			set @IdCidade = (select IdCidade from tbCidade where Cidade = vCidade);
-
-			insert into tbEndereco(CEP, Logradouro, IdBairro, IdCidade, IdUF) values
-			(vCEP, vLogradouro, @IdBairro, @IdCidade, @IdUF); 
-		end if;
-    
-		insert into tbCliente(NomeCli, CEP, NumEnd, CompEnd) values (vNomeCli, vCEP, vNumEnd, vCompEnd);
-		insert into tbClientePF(CPF, RG, RgDig, Nasc) values (vCPF, vRG, vRgDig, vNasc);
-	else
-		select "Existe";
-	end if;
-end $$
-
--- CALL -- FAZENDO OS INSERTS
-call spInsertCliente('Pimpão', 325, null, 12345051, 12345678911, 12345678, 0, '2000-12-10', 'Av. Brasil', 'Lapa', 'Campinas', 'SP');
-call spInsertCliente('Disney Chaplin', 89, 'Ap. 12', 12345053, 12345678912, 12345679, 0, '2001-11-21', 'Av. Paulista', 'Penha', 'Rio de Janeiro', 'RJ');
-call spInsertCliente('Marciano', 744, null, 12345054, 12345678913, 12345680, 0, '2001-06-01', 'Rua Ximbú', 'Penha', 'Rio de Janeiro', 'RJ');
-call spInsertCliente('Lança Perfume', 128, null, 12345059, 12345678914, 12345681, 'X', '2004-04-05', 'Rua Veia', 'Jardim Santa Isabel', 'Cuiabá', 'MT');
-call spInsertCliente('Remédio Amargo', 2485, null, 12345058, 12345678915, 12345682, 0, '2002-07-15', 'Av. Nova', 'Jardim Santa Isabel', 'Cuiabá', 'MT');
-
--- SELECT 
 select * from tbClientePF;
 select * from tbCliente;
 select * from tbEndereco;
@@ -361,50 +320,53 @@ select * from tbUF;
 select * from tbBairro;
 select * from tbCidade;
 
--- FINALIZAÇÃO
-
--- EXERCÍCIO 8 -- INSERINDO CLIENTES PJ -- 
 delimiter $$
-create procedure spInsertCliPJ (vNomeCli varchar(50), vCNPJ decimal(14,0), vIE decimal(11,0), vCEP decimal(8,0), vLogradouro varchar(200), vNumEnd decimal(6,0), vCompEnd varchar(50),
-vBairro varchar(200), vCidade varchar(200), vUF char(2))
-
-begin
-    if not exists (select Cnpj from tbClientePJ where Cnpj = vCNPJ) then
-		if not exists (select CEP from tbEndereco where CEP = vCEP) then
-			if not exists (select IdBairro from tbBairro where Bairro = vBairro) then
-				insert into tbBairro(Bairro) values (vBairro);
-			end if;
-
-			if not exists (select IdUf from tbUF where UF = vUF) then
-				insert into tbUF(UF) values (vUF);
-			end if;
-
-			if not exists (select IdCidade from tbCidade where Cidade = vCidade) then
-				insert into tbCidade(Cidade) values (vCidade);
-			end if;
-
-			set @IdBairro = (select IdBairro from tbBairro where Bairro = vBairro);
-			set @IdUf = (select IdUF from tbUF where UF = vUf);
-			set @IdCidade = (select IdCidade from tbCidade where Cidade = vCidade);
-
-			insert into tbEndereco(CEP, Logradouro, IdBairro, IdCidade, IdUF) values
-			(vCEP, vLogradouro, @IdBairro, @IdCidade, @IdUF); 
-		end if;
-        
-			insert into tbCliente(NomeCli, CEP, NumEnd, CompEnd) value(vNomeCli, vCEP, vNumEnd, vCompEnd);
-			insert into tbClientePJ(Cnpj, Ie) value (vCNPJ, vIE);
-	else
-		select "Existe";
+ create procedure spInsertClientePf(vNomeCli varchar(200), vNumEnd decimal(6,0), vCompEnd varchar(50), vCepCli decimal(8,0), vCpf decimal(11,0), vRg decimal(9,0), vRg_Dig char(1), vNasc date,vLogradouro varchar(200),vBairro varchar(200), vCidade varchar(200), vEstado varchar(200))
+ begin
+	if not exists(select * from tbEndereco where CEP = vCepCli) then
+		call spInsertEndereco(vCepCli,vLogradouro,vBairro,vCidade, vEstado);
 	end if;
-end $$
+		if not exists(select * from tbClientePf where CPF = vCPF) then
+			insert into tbCliente(NomeCli,NumEnd,CompEnd,cep) values (vNomeCli,vNumEnd,vCompEnd,vCepCli);
+			set @idCli = (select max(IdCli) from tbCliente);
+			insert into tbClientePf(CPF, RG, RGDig, Nasc, IdCli) values (vCPF, vRG, vRG_Dig, vNasc, @IdCli);
+		else
+		select "Existe";
+    end if;
+ end
+ $$
 
--- CALL -- FAZENDO OS INSERTS
+call spInsertClientePf("Pimpão",325,null,12345051,12345678911,12345678,"0","2000-10-12","Av. Brasil","Lapa","Campinas","SP");
+call spInsertClientePf("Disney Chaplin",89,"Ap. 12",12345053,12345678912,12345679,"0","2000-11-21","Av. Brasil","Penha","Rio de Janeiro","RJ");
+call spInsertClientePf("Marciano",744,null,12345054,12345678913,12345680,"0","2000-06-01","Rua Ximbu","Penha","Rio de Janeiro","RJ");
+call spInsertClientePf("Lança Perfume",128,null,12345059,12345678914,12345681,"X","2000-04-05","Rua veia","Jardim Santa Isabel","Cuiabá","MT");
+call spInsertClientePf("Remédio Amargo",2585,null,12345058,12345678915,12345682,"0","2000-07-15","Av Nova","Jardim Santa Isabel","Cuiabá","MT");
 
-call spInsertCliPJ('Paganada', 12345678912345, 98765432198, 12345051, 'Av. Brasil', 159, null, 'Lapa', 'Campinas', 'SP');
-call spInsertCliPJ('Caloteando', 12345678912346, 98765432199, 12345053, 'Av. Paulista', 69, null, 'Penha', 'Rio de Janeiro', 'RJ');
-call spInsertCliPJ('Semgrana', 12345678912347, 98765432100, 12345060, 'Rua dos Amores', 189, null, 'Sei Lá', 'Recife', 'PE');
-call spInsertCliPJ('Cemreais', 12345678912348, 98765432101, 12345060, 'Rua dos Amores', 5024, 'Sala 23', 'Sei Lá', 'Recife', 'PE');
-call spInsertCliPJ('Durango', 12345678912349, 98765432102, 12345060, 'Rua dos Amores', 1254, null, 'Sei Lá', 'Recife', 'PE');
+
+
+-- EXERCÍCIO 8
+delimiter $$
+ create procedure spInsertCliPJ(vNomeCli varchar(200),vCNPJ decimal(14,0),vIE decimal(11,0), vCepCli decimal(8,0), vLogradouro varchar(200), vNumEnd decimal(6,0), vCompEnd varchar(50),vBairro varchar(200), vCidade varchar(200), vEstado varchar(200)) 
+ begin
+	if not exists(select * from tbEndereco where CEP = vCepCli) then
+		call spInsertEndereco(vCepCli,vLogradouro,vBairro,vCidade, vEstado);
+	end if;
+		if not exists(select * from tbClientePJ where CNPJ = vCNPJ) then
+			insert into tbCliente(NomeCli,NumEnd,CompEnd,cep) values (vNomeCli,vNumEnd,vCompEnd,vCepCli);
+			set @idCli = (select max(IdCli) from tbCliente);
+			insert into tbClientePJ(CNPJ, IE, idCli) values (vCNPJ, vIE,@IdCli);
+		else
+		select "Existe";
+		end if;
+ end
+ $$
+
+call spInsertCliPJ("Paganada",12345678912345,98765432198,12345051,"Av. Brasil",159,null,"Lapa","Campinas","SP");
+call spInsertCliPJ("Caloteando",12345678912346,98765432199,12345053,"Av. Paulista",69,null,"Penha","Rio de Janeiro","RJ");
+call spInsertCliPJ("Semgrana",12345678912347,98765432100,12345060,"Rua dos Amores",189,null,"Sei lá","Recife","PE");
+call spInsertCliPJ("Cemreais",12345678912348,98765432101,12345060,"Rua dos Amores",5024,"Sala 23","Sei lá","Recife","PE");
+call spInsertCliPJ("Durango",12345678912349,98765432102,12345060,"Rua dos Amores",1254,null,"Sei lá","Recife","PE");
+
 
 -- SELECT 
 select * from tbClientePJ;
@@ -416,33 +378,34 @@ select * from tbCidade;
 
 -- FINALIZAÇÃO
 
--- EXERCÍCIO 9 -- INSERINDO COMPRAS -- 
-delimiter $$
-create procedure spInsertCompra(vNotaFiscal int, vFornecedor varchar(200), vDataCompra date, vCodBarras decimal(14,0), vValorItem decimal(6,2),
-vQtd int, vQtdTotal int, vValorTotal decimal(8,2))
-begin
-	declare vDataConvertida date;
-	set vDataConvertida = STR_TO_DATE(vDataCompra, '%d/%m/%Y');
-	if not exists (select NotaFiscal from tbCompra where NotaFiscal = vNotaFiscal) then
-		insert into tbCompra(NotaFiscal, DataCompra, ValorTotal, QtdTotal, Cod_Fornecedor) values (vNotaFiscal, vDataConvertida, vValorTotal, vQtdTotal,
-        (select codigo from tbFornecedor where Nome = vFornecedor));
-	end if;
-        insert into tbItemCompra(Qtd, ValorItem, NotaFiscal, CodBarras) values (vQtd, vValorItem, vNotaFiscal, vCodBarras);
-end $$
-
--- CALL -- FAZENDO OS INSERTS
-call spInsertCompra(8459, 'Amoroso e Doce', '01/05/2018', 12345678910111, 22.22, 200, 700, 21944.00);
-call spInsertCompra(2482, 'Revenda Chico Loco', '22/04/2020', 12345678910112, 40.50, 180, 180, 7290.00);
-call spInsertCompra(21563, 'Marcelo Dedal', '12/07/2020', 12345678910113, 3.00, 300, 300, 900.00);
-call spInsertCompra(8459, 'Amoroso e Doce', '04/12/2020', 12345678910114, 35.00, 500, 700, 21944.00);
-call spInsertCompra(156354, 'Revenda Chico Loco', '23/11/2021', 12345678910115, 54.00, 350, 350, 18900.00);
-
--- SELECT 
 select * from tbCompra;
 select * from tbFornecedor;
 select * from tbItemCompra;
 
--- FINALIZAÇÃO
+-- EXERCÍCIO 9
+
+delimiter $$
+create procedure spInsertCompra(vNotaFiscal int,vFornecedor varchar(100), vDataCompra char(10), vCodigoBarras decimal(14,0), vValorItem decimal(5,2), vQtd int,vQtdTotal int,vValorTotal decimal(10,2))
+begin
+	declare vDataFormatada date;
+	if not exists(select * from tbCompra where NotaFiscal = vNotaFiscal) then
+        set @Fornecedor = (select Codigo from tbFornecedor where Nome = vFornecedor);
+        set vDataFormatada = str_to_date(vDataCompra, '%d/%m/%Y');
+		insert into tbCompra(NotaFiscal,DataCompra,ValorTotal,QtdTotal,cod_Fornecedor) values (vNotaFiscal,vDataFormatada,vValorTotal,vQtdTotal,@Fornecedor);
+    end if;
+    if not exists(select * from tbItemCompra where NotaFiscal = vNotaFiscal and CodBarras = vCodigoBarras) then
+    insert into tbItemCompra(NotaFiscal,CodBarras,Qtd,ValorItem) values (vNotaFiscal,vCodigoBarras,vQtd,vValorItem);
+ 
+	end if;
+end
+$$
+
+call spInsertCompra(8459,"Amoroso e Doce",'01/05/2018',12345678910111,22.22,200,700, 21944.00);
+call spInsertCompra(2482,"Revenda Chico Loco",'22/04/2020',12345678910112,40.50,180,180,7290.00);
+call spInsertCompra(21653,"Marcelo Dedal",'12/07/2020',12345678910113,3.00,300,300,900.00);
+call spInsertCompra(8459,"Amoroso e Doce",'04/12/2020',12345678910114,35.00,500,700,21944.00);
+call spInsertCompra(156354,"Revenda Chico Loco",'23/11/2021',12345678910115,54.00,350,350,18900.00);
+
 
 -- EXERCÍCIO 10 -- INSERINDO VENDAS -- 
 delimiter $$
@@ -707,3 +670,145 @@ call spInsertCompra(10548, 'Amoroso e Doce', '10/09/2022', 12345678910111, 40.00
 call spMostrarProduto;
 
 -- FINALIZAÇÃO
+
+show tables;
+
+select * from tbcliente;
+select * from tbclientepf;
+select * from tbendereco;
+select * from tbbairro;
+select * from tbcidade;
+select * from tbuf;
+
+-- EXERCÍCIO 32
+select * from tbcliente inner join tbclientepf on tbcliente.IdCli = tbclientepf.IdCli;
+
+-- EXERCÍCIO 33
+select * from tbcliente inner join tbclientepj on tbcliente.IdCli = tbclientepj.IdCli;
+
+-- EXERCÍCIO 34
+select tbclientepj.IdCli, Nomecli, cnpj, ie,  tbcliente.IdCli from tbcliente inner join tbclientepj on tbcliente.IdCli = tbclientepj.IdCli;
+
+-- EXERCÍCIO 35
+select tbclientepf.IdCli as 'Código', Nomecli as 'Nome', cpf  as 'CPF', rg as 'RG', nasc as 'Data Nascimento' from tbcliente inner join tbclientepf on tbcliente.IdCli = tbclientepf.IdCli;
+
+-- EXERCÍCIO 36
+select * from tbcliente inner join tbClientepj on tbcliente.IdCli = tbClientepj.IdCli inner join tbendereco on tbcliente.cep = tbendereco.CEP;
+
+-- EXERCÍCIO 37
+ select  
+     tbcliente.idcli, 
+     tbcliente.nomecli, 
+     tbcliente.numend, 
+     tbcliente.compend, 
+     tbcliente.cep, 
+     tbbairro.bairro, 
+     tbcidade.cidade, 
+     tbuf.uf 
+ from 
+     tbcliente 
+         inner join 
+     tbclientepj on tbcliente.idcli = tbclientepj.idcli 
+         inner join 
+     tbendereco on tbendereco.cep = tbcliente.cep 
+         inner join 
+     tbbairro on tbbairro.idbairro = tbendereco.idbairro 
+         inner join 
+     tbcidade on tbcidade.idcidade = tbendereco.idcidade 
+         inner join 
+     tbuf on tbuf.iduf = tbendereco.iduf; 
+  
+-- EXERCÍCIO 38
+delimiter $$ 
+create procedure spSelectClientePFID(vIdCli int) 
+begin 
+     if exists (select * from tbClientePF where Idcli = vIdCli) then 
+     select 
+		tbcliente.idcli as "Código", 
+		tbcliente.nomecli as "Nome", 
+		tbclientepf.cpf as "CPF", 
+		tbclientepf.rg as "RG", 
+		tbclientepf.rgdig as "Digito", 
+		tbclientepf.nasc as "Data de Nascimento", 
+		tbcliente.cep as "CEP", 
+		tbendereco.logradouro as "Logradouro", 
+		tbcliente.numend as "Número", 
+		tbcliente.compend as "Complemento", 
+		tbbairro.bairro "Bairro", 
+		tbcidade.cidade "Cidade", 
+		tbuf.uf "UF" 
+	from 
+		tbcliente 
+			inner join 
+		tbclientepf on tbcliente.idcli = vIdCli 
+			inner join 
+		tbendereco on tbendereco.cep = tbcliente.cep 
+			inner join 
+		tbbairro on tbbairro.idbairro = tbendereco.idbairro 
+			inner join 
+		tbcidade on tbcidade.idcidade = tbendereco.idcidade 
+			inner join 
+		tbuf on tbuf.iduf = tbendereco.iduf limit 1;
+	else  
+		select "Cliente não cadastrado"; 
+	end if; 
+ end; 
+ $$ 
+ 
+select * from tbcliente;
+select * from tbclientepf;
+select * from tbendereco;
+select * from tbbairro;
+select * from tbcidade;
+select * from tbuf;
+
+call spSelectClientePFID(2);   
+call spSelectClientePFID(5); 
+  
+-- EXERCÍCIO-39
+select * from tbproduto;
+select * from tbitemvenda;
+
+select 
+   tbproduto.codbarras, 
+   tbproduto.nome, 
+   tbproduto.valorunitario, 
+   tbproduto.qtd, 
+   tbitemvenda.qtd, 
+   tbitemvenda.valoritem, 
+   tbitemvenda.codbarras,
+   tbitemvenda.numerovenda 
+from  
+   tbproduto  
+		left join  
+   tbitemvenda on tbproduto.codbarras = tbitemvenda.codbarras; 
+          
+-- EXERCÍCIO 40
+select * from tbcompra;
+select * from tbfornecedor;
+
+select  
+   tbcompra.notafiscal, 
+   tbcompra.datacompra, 
+   tbcompra.valortotal, 
+   tbcompra.qtdtotal, 
+   tbcompra.cod_fornecedor, 
+   tbfornecedor.codigo as "Código", 
+   tbfornecedor.cnpj, 
+   tbfornecedor.nome as "Nome", 
+   tbfornecedor.telefone as "Telefone" 
+from 
+	tbcompra 
+		right join 
+	tbfornecedor on tbfornecedor.codigo = tbcompra.cod_fornecedor; 
+            
+-- EXERCÍCIO 41
+select 
+    tbfornecedor.codigo as "Código",  
+    cnpj as "CNPJ",  
+    nome as "Nome",  
+    telefone as "Telefone"  
+from 
+	tbcompra 
+		right join 
+    tbfornecedor on tbcompra.cod_fornecedor = tbfornecedor.codigo where tbcompra.cod_fornecedor is null; 
