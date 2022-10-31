@@ -450,6 +450,8 @@ call spInsertVenda("Pimpão",12345678910113,1,null);
 
 -- SELECT 
 select * from tbCliente;
+select * from tbEndereco;
+select * from tbBairro;
 select * from tbProduto;
 select * from tbVenda;
 select * from tbItemVenda;
@@ -754,18 +756,12 @@ begin
 	end if; 
  end; 
  $$ 
- 
-select * from tbcliente;
-select * from tbclientepf;
-select * from tbendereco;
-select * from tbbairro;
-select * from tbcidade;
-select * from tbuf;
 
 call spSelectClientePFID(2);   
-call spSelectClientePFID(5); 
+call spSelectClientePFID(5);
+call spSelectClientePFID(7); 
   
--- EXERCÍCIO-39
+-- EXERCÍCIO 39
 select * from tbproduto;
 select * from tbitemvenda;
 
@@ -786,7 +782,6 @@ from
 -- EXERCÍCIO 40
 select * from tbcompra;
 select * from tbfornecedor;
-
 select  
    tbcompra.notafiscal, 
    tbcompra.datacompra, 
@@ -823,7 +818,8 @@ select * from tbnotafiscal;
 select  
      tbcliente.idcli, nomecli, datavenda, 
      tbproduto.codbarras, 
-     tbproduto.nome, valorunitario 
+     tbproduto.nome, 
+     tbitemvenda.valoritem
  from 
      tbcliente 
          inner join 
@@ -839,11 +835,16 @@ select
 select * from tbbairro;
 select * from tbvenda;
 select * from tbcliente;
-sel
+select * from tbendereco;
 
-select 
-    tbfornecedor.codigo as "Código",  
-from 
-	tbcompra 
-		right join 
-    tbfornecedor on tbcompra.cod_fornecedor = tbfornecedor.codigo where tbcompra.cod_fornecedor is null; 
+ select distinct bairro 
+ from 
+     tbbairro 
+         left join 
+     tbendereco on tbbairro.idbairro = tbendereco.idbairro 
+         left join 
+     tbcliente on tbendereco.cep = tbcliente.cep 
+         left join 
+     tbvenda on tbcliente.idcli = tbvenda.idcli 
+ where 
+     tbvenda.idcli is null;      
