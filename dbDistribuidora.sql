@@ -837,14 +837,102 @@ select * from tbvenda;
 select * from tbcliente;
 select * from tbendereco;
 
- select distinct bairro 
- from 
-     tbbairro 
-         left join 
-     tbendereco on tbbairro.idbairro = tbendereco.idbairro 
-         left join 
-     tbcliente on tbendereco.cep = tbcliente.cep 
-         left join 
-     tbvenda on tbcliente.idcli = tbvenda.idcli 
- where 
-     tbvenda.idcli is null;      
+select distinct bairro 
+from 
+	tbcliente 
+		right join tbvenda
+        on tbcliente.id = tbvenda.id_cli
+        left join tbitemvenda
+        on tbvenda.numerovenda = tbitemvenda.numerovenda
+        left join tbendereco
+        on tbcliente.cep = tbendereco.cep
+        right join tbbairro
+        on tbbairro.bairroid = tbendereco.bairro
+        where tbitemvenda.codbarras is null and tbitemvenda.numerovenda is null
+        
+        
+-- EXPLICAÇÃO 07/11
+
+/* left join - une os registros da tabela A com a tabela B mantendo TODOS os dados da tabela da esquerda e apenas os dados correspondentes (que se relacionam) da tabela da direita */
+/* right join - inverso do left join */
+/* cross join (plano cartesiano) - une todos os registros da tabela a com a b */
+/* handle for (action continua ou para) - tipo o try catch; tratamento de excessões (forma de visualização de um erro, tratamento de excessões) */
+/* union - literalmente UNE	os dados da tabela A com a B. Coloca um acima do outro porém precisa ter a mesma quantidade de colunas, se tiver uma a mais já vai dar um erro */
+/* view - é a saída de como o usuário verá, como o select. visualização para o usuário */
+
+select * from tbfornecedor;
+
+-- EXERCÍCIO 44
+Create view ViewFornecedor as select codigo, nome, telefone from tbfornecedor;
+
+-- EXERCÍCIO 45
+select nome,telefone from ViewFornecedor;
+
+-- EXERCÍCIO 46
+select * from tbclientepf;
+select * from tbcliente;
+select * from tbendereco;
+
+create view ViewClientePJ as 
+		select  
+			tbcliente.idcli, 
+			tbcliente.nomecli, 
+			tbcliente.cep, 
+            tbendereco.logradouro, 
+            tbcliente.numend, 
+			tbcliente.compend, 
+			tbbairro.bairro, 
+			tbcidade.cidade, 
+			tbUF.uf  
+		from 
+			tbcliente 
+				inner join 
+			tbClientePJ on tbcliente.idcli = tbClientePJ.IdCli 
+				inner join 
+			tbendereco on tbendereco.cep = tbcliente.cep 
+				inner join 
+			tbbairro on tbbairro.idbairro = tbendereco.idbairro 
+				inner join 
+			tbcidade on tbcidade.idcidade = tbendereco.idcidade 
+				inner join 
+			tbUF on tbUF.iduf = tbendereco.iduf ; 
+
+select * from ViewClientePJ;
+
+-- EXERCÍCIO 47
+select idcli as "Código",nomecli as "Cliente", cep as "CEP",logradouro as "Endereço",numend as "Número",compend as "Complemento",bairro as "Bairro",cidade as "Cidade",uf as "UF" from ViewClientePJ;
+
+-- EXERCÍCIO 48
+select * from tbclientepf;
+
+create view ViewClientePF as 
+		select  
+			tbcliente.idcli, 
+			tbcliente.nomecli, 
+            tbclientepf.cpf,
+            tbclientepf.rg,
+            tbclientepf.rgdig,
+            tbclientepf.nasc,
+			tbcliente.cep, 
+            tbendereco.logradouro, 
+            tbcliente.numend, 
+			tbcliente.compend, 
+			tbbairro.bairro, 
+			tbcidade.cidade, 
+			tbUF.uf  
+		from 
+			tbcliente 
+				inner join 
+			tbClientePF on tbcliente.idcli = tbClientePF.IdCli 
+				inner join 
+			tbendereco on tbendereco.cep = tbcliente.cep 
+				inner join 
+			tbbairro on tbbairro.idbairro = tbendereco.idbairro 
+				inner join 
+			tbcidade on tbcidade.idcidade = tbendereco.idcidade 
+				inner join 
+			tbUF on tbUF.iduf = tbendereco.iduf; 
+
+-- EXERCÍCIO 49
+select idcli as "Código",nomecli as "Cliente",cpf as "CPF",rg as "RG", rgdig as "Dig", nasc as "Nascimento" from ViewClientePF;
+            
