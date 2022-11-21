@@ -936,3 +936,36 @@ create view ViewClientePF as
 -- EXERCÍCIO 49
 select idcli as "Código",nomecli as "Cliente",cpf as "CPF",rg as "RG", rgdig as "Dig", nasc as "Nascimento" from ViewClientePF;
             
+-- EXERCÍCIO 50
+select * from tbclientepj;
+
+create or replace view ViewClientePJ as
+	select
+			tbcliente.idcli, 
+			tbcliente.nomecli, 
+            tbclientepj.cnpj,
+            tbclientepj.ie,
+			tbcliente.cep, 
+            tbendereco.logradouro, 
+            tbcliente.numend, 
+			tbcliente.compend, 
+			tbbairro.bairro, 
+			tbcidade.cidade, 
+			tbUF.uf  
+		from 
+			tbcliente 
+				inner join 
+			tbClientePJ on tbcliente.idcli = tbClientePJ.IdCli 
+				inner join 
+			tbendereco on tbendereco.cep = tbcliente.cep 
+				inner join 
+			tbbairro on tbbairro.idbairro = tbendereco.idbairro 
+				inner join 
+			tbcidade on tbcidade.idcidade = tbendereco.idcidade 
+				inner join 
+			tbUF on tbUF.iduf = tbendereco.iduf ; 
+            
+-- EXERCÍCIO 51
+select idcli,nomecli,cep,logradouro,numend,compend,bairro,cidade,uf from ViewClientePJ
+union
+select idcli,nomecli,cep,logradouro,numend,compend,bairro,cidade,uf from ViewClientePF;
